@@ -34,7 +34,10 @@ module Spree
     scope :active, -> { where(enabled: true) }
     scope :not_cancelled, -> { where(cancelled_at: nil) }
     scope :with_appropriate_delivery_time, -> { where("next_occurrence_at <= :current_date", current_date: Time.current) }
+    scope :with_future_delivery_time, -> { where("next_occurrence_at >= :current_date", current_date: Time.current) }
     scope :eligible_for_subscription, -> { unpaused.active.not_cancelled.with_appropriate_delivery_time }
+    scope :eligible_for_prior_notification, -> { unpaused.active.not_cancelled.with_future_delivery_time }
+
     scope :with_parent_orders, -> (orders) { where(parent_order: orders) }
 
     with_options allow_blank: true do
