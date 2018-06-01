@@ -176,14 +176,30 @@ module Spree
       def recreate_order
         begin
           order = make_new_order
+          puts '######## new_order'
           add_variant_to_order(order)
+          puts '######## variant'
           add_shipping_address(order)
+          puts '######## ship_address'
           add_delivery_method_to_order(order)
+          puts '######## deliver'
           add_payment_method_to_order(order)
+          puts 'payment complete'
           confirm_order(order)
+          unless order.payment_state == 'paid'
+            raise 'Not able to capture payment'
+          end
+          puts '######## complete'
           order
+          puts '### end ###'
         rescue Exception => e
-          SubscriptionNotifier.failed_recurring_order(self, e).deliver_later
+          puts 'Exception ########'
+          puts e.message
+          puts 
+          puts
+          puts e
+          puts '######## end'
+          SubscriptionNotifier.failed_recurring_order(self, e.message).deliver_later
         end
       end
 
