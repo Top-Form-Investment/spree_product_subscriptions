@@ -181,9 +181,23 @@ module Spree
           add_delivery_method_to_order(order)
           add_payment_method_to_order(order)
           confirm_order(order)
+          unless order.payment_state == 'paid'
+            set_for_next_retry
+          end
           order
         rescue Exception => e
-          SubscriptionNotifier.failed_recurring_order(self, e).deliver_later
+          SubscriptionNotifier.failed_recurring_order(self, e.message).deliver_later
+        end
+      end
+
+      def set_for_next_retry
+        if failed_attempts < 2
+          self.failed_attempts += 1
+          self.next_occurrence_at = next_occurrence_at + 7.days
+          self.save
+          raise 'Oops - We are not able to capture payment'
+        else
+          cancel
         end
       end
 
