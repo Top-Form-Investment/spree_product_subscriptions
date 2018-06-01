@@ -174,13 +174,17 @@ module Spree
       end
 
       def recreate_order
-        order = make_new_order
-        add_variant_to_order(order)
-        add_shipping_address(order)
-        add_delivery_method_to_order(order)
-        add_payment_method_to_order(order)
-        confirm_order(order)
-        order
+        begin
+          order = make_new_order
+          add_variant_to_order(order)
+          add_shipping_address(order)
+          add_delivery_method_to_order(order)
+          add_payment_method_to_order(order)
+          confirm_order(order)
+          order
+        rescue Exception => e
+          SubscriptionNotifier.failed_recurring_order(self, e).deliver_later
+        end
       end
 
       def make_new_order

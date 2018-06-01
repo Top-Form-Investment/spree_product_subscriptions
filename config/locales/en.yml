@@ -15,6 +15,9 @@ en:
       notify_for_next_delivery:
         subject: "%{frequency} %{number} Subscription Notice"
         order_details: 'Order Details'
+      failed_recurring_order:
+        subject: "Subscription %{number} Recurring Order creation gone failed"
+        order_details: 'Order Details'
 
     subscriptions:
       pause:
