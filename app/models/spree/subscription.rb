@@ -181,7 +181,7 @@ module Spree
           add_delivery_method_to_order(order)
           add_payment_method_to_order(order)
           confirm_order(order)
-          unless order.payment_state == 'paid' && payment_method.type != 'Spree::Gateway::WorldpayIframe'
+          unless order.payment_state == 'paid'
             set_for_next_retry
           end
           order
