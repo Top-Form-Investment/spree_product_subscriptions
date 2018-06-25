@@ -222,7 +222,7 @@ module Spree
 
       def add_payment_method_to_order(order)
         if order.payments.exists?
-          order.payments.first.update(source: source, payment_method: source.payment_method)
+          order.payments.last.update(source: source, payment_method: source.payment_method)
         else
           order.payments.create(amount: order.total, source: source, payment_method: source.payment_method)
         end
@@ -230,6 +230,11 @@ module Spree
       end
 
       def confirm_order(order)
+        if source.payment_method.type == 'Spree::Gateway::WorldpayIframe'
+          unless source.payment_method.create_recurring_payment(order.id, order.payments.last.id)
+            raise 'Oops - We are not able to payment complete by worldpay'
+          end
+        end
         order.next
       end
 
