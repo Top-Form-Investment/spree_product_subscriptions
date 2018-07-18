@@ -16,7 +16,8 @@ en:
         subject: "%{frequency} %{number} Subscription Notice"
         order_details: 'Order Details'
       failed_recurring_order:
-        subject: "Subscription %{number} Recurring Order creation gone failed"
+        subject_1: "Your Subscription's(%{number}) Payment has failed"
+        subject_3: "Your Subscription(%{number}) has been cancelled"
         order_details: 'Order Details'
 
     subscriptions:

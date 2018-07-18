@@ -58,7 +58,6 @@ module Spree
     define_model_callbacks :unpause, only: [:before]
     before_unpause :can_unpause?, :set_next_occurrence_at_after_unpause
     define_model_callbacks :process, only: [:after]
-    after_process :notify_reoccurrence, if: :reoccurrence_notifiable?
     define_model_callbacks :cancel, only: [:before]
     before_cancel :set_cancellation_reason, if: :can_set_cancellation_reason?
 
@@ -175,27 +174,36 @@ module Spree
 
       def recreate_order
         begin
-          order = make_new_order
+          @order = order = make_new_order
           add_variant_to_order(order)
           add_shipping_address(order)
           add_delivery_method_to_order(order)
           add_payment_method_to_order(order)
           confirm_order(order)
-          unless order.payment_state == 'paid'
-            set_for_next_retry
+          if order.completed?
+            self.failed_attempts = 0
+            self.save
+            SubscriptionNotifier.notify_reoccurrence(self).deliver_later
           end
           order
         rescue Exception => e
-          SubscriptionNotifier.failed_recurring_order(self, e.message).deliver_later
+          unless @order.payment_state == 'paid'
+            set_for_next_retry
+            SubscriptionNotifier.failed_recurring_order(self, 'Oops - We are not able to capture payment').deliver_later
+          end
+          order_number = @order.present? ? @order.try(:number) : nil
+          SubscriptionNotifier.notify_failed_order(self, e.message, order_number).deliver_later
         end
       end
 
       def set_for_next_retry
-        if failed_attempts < 2
+        if failed_attempts < 3
           self.failed_attempts += 1
           self.next_occurrence_at = next_occurrence_at + 7.days
           self.save
-          raise 'Oops - We are not able to capture payment'
+          if self.failed_attempts == 3
+            cancel
+          end
         else
           cancel
         end
@@ -273,7 +281,7 @@ module Spree
       end
 
       def reoccurrence_notifiable?
-        next_occurrence_at_changed? && !!next_occurrence_at_was
+        true
       end
 
       def notify_reoccurrence

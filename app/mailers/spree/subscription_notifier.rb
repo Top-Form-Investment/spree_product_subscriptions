@@ -34,6 +34,6 @@ class Spree::SubscriptionNotifier < ApplicationMailer
   def failed_recurring_order(subscription, error)
     @error = error
     @subscription = subscription
-    mail to: subscription.parent_order.email, subject: t('.subject', number: subscription.number)
+    mail to: subscription.parent_order.email, subject: t('.subject_1', number: subscription.number)
   end
 end
