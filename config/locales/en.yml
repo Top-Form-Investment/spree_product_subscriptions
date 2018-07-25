@@ -25,7 +25,7 @@ en:
         success: "Subscription is paused"
         error: "There was some failure in pausing the subscription"
       unpause:
-        success: "Subscription is active. Your next occurrence will be on %{next_occurrence_at}"
+        success: "Your subscription is now active. Your next auto-payment and delivery will be processed on the %{next_occurrence_at}"
         error: "There was some faiure in activating the subscription"
       cancel:
         success: "Subscription was successfully cancelled"
@@ -40,7 +40,7 @@ en:
       confirm:
         pause: "Are you sure you want to pause this subscription"
         activate: "Are you sure you want to activate this subscription"
-        cancel: "Are you sure to cancel this subscription. One cancelled it cannot be started again."
+        cancel: "Are you sure you want to cancel your subscription? Once cancelled it cannot be reactivated."
 
     admin:
       subscriptions:
@@ -53,7 +53,7 @@ en:
         cancel:
           success: "Subscription %{number} is cancelled"
         cancellation:
-          confirm: "Once cancelled, subscription can not be enabled again"
+          confirm: "Are you sure you want to cancel your subscription? Once cancelled it cannot be reactivated."
         error_on_already_cancelled: "Cancelled Subscription can not be processed."
 
   activerecord:

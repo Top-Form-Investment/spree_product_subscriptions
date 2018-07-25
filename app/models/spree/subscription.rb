@@ -34,7 +34,7 @@ module Spree
     scope :active, -> { where(enabled: true) }
     scope :not_cancelled, -> { where(cancelled_at: nil) }
     scope :with_appropriate_delivery_time, -> { where("next_occurrence_at <= :current_date", current_date: Time.current) }
-    scope :with_future_delivery_time, -> { where("next_occurrence_at >= :current_date", current_date: Time.current) }
+    scope :with_future_delivery_time, -> { where("DATE(next_occurrence_at) >= ?", Date.today) }
     scope :eligible_for_subscription, -> { unpaused.active.not_cancelled.with_appropriate_delivery_time }
     scope :eligible_for_prior_notification, -> { unpaused.active.not_cancelled.with_future_delivery_time }
 
@@ -230,7 +230,7 @@ module Spree
 
       def add_payment_method_to_order(order)
         if order.payments.exists?
-          order.payments.first.update(source: source, payment_method: source.payment_method)
+          order.payments.last.update(source: source, payment_method: source.payment_method)
         else
           order.payments.create(amount: order.total, source: source, payment_method: source.payment_method)
         end
