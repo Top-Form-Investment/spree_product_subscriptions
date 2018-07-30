@@ -180,6 +180,10 @@ module Spree
           add_delivery_method_to_order(order)
           add_payment_method_to_order(order)
           confirm_order(order)
+          if @order.payments.last.state.try(:downcase) == 'failed'
+            set_for_next_retry
+            SubscriptionNotifier.failed_recurring_order(self, 'Oops - We are not able to capture payment').deliver_later
+          end
           if order.completed?
             self.failed_attempts = 0
             self.save
@@ -187,7 +191,7 @@ module Spree
           end
           order
         rescue Exception => e
-          unless @order.payment_state == 'paid'
+          if @order.payments.last.state.try(:downcase) == 'failed'
             set_for_next_retry
             SubscriptionNotifier.failed_recurring_order(self, 'Oops - We are not able to capture payment').deliver_later
           end
