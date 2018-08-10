@@ -252,7 +252,8 @@ module Spree
           store: parent_order.store,
           user: parent_order.user,
           created_by: parent_order.user,
-          last_ip_address: parent_order.last_ip_address
+          last_ip_address: parent_order.last_ip_address,
+          language_locale: parent_order.language_locale
         }
       end
 
