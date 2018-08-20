@@ -177,6 +177,7 @@ module Spree
           @order = order = make_new_order
           add_variant_to_order(order)
           add_shipping_address(order)
+          add_discount(order)
           add_delivery_method_to_order(order)
           add_payment_method_to_order(order)
           confirm_order(order)
@@ -311,5 +312,16 @@ module Spree
         end
       end
 
+      def add_discount(order)
+        if parent_order.promo_total.abs > 0
+          present_discount = ((parent_order.promo_total.abs/(parent_order.total+parent_order.promo_total.abs))*100).to_f.round(2)
+          discount_value = (order.total*(present_discount/100)).round(2)
+          order.total = order.total - discount_value
+          order.promo_total = -discount_value
+          order.adjustment_total = -discount_value
+          order.adjustments.create(amount: order.promo_total, order: order, source: parent_order.promotions.first, label: "Promotion (#{parent_order.promotions.first.name})")
+          order.save
+        end
+      end
   end
 end
