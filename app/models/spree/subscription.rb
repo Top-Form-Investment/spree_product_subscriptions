@@ -180,6 +180,7 @@ module Spree
           add_discount(order)
           add_delivery_method_to_order(order)
           add_payment_method_to_order(order)
+          order.update(promo_total: -@discount_value) if @discount_value.present?
           confirm_order(order)
           if @order.payments.last.state.try(:downcase) == 'failed'
             set_for_next_retry
@@ -330,11 +331,12 @@ module Spree
             end
           end
           if present_discount > 0
-            discount_value = (order.total*(present_discount/100)).round(2)
-            order.total = order.total - discount_value
-            order.promo_total = -discount_value
-            order.adjustment_total = -discount_value
+            @discount_value = (order.total*(present_discount/100)).round(2)
+            order.total = order.total - @discount_value
+            order.promo_total = -@discount_value
+            order.adjustment_total = -@discount_value
             order.adjustments.create(amount: order.promo_total, order: order, source: parent_order.promotions.first, label: "Promotion (#{parent_order.promotions.first.name})")
+            order.promotions = parent_order.promotions
             order.save
           end
         end
