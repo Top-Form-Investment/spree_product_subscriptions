@@ -316,11 +316,11 @@ module Spree
         present_discount = 0
         if parent_order.promo_total.abs > 0
           if parent_order.line_items.count == 1
-            present_discount = ((parent_order.promo_total.abs/(parent_order.total+parent_order.promo_total.abs))*100).to_f.round(2)
+            present_discount = ((parent_order.promo_total.abs/(parent_order.item_total+parent_order.promo_total.abs))*100).to_f.round(2)
           else
             promo_line_items = parent_order.line_items.select{|s| s.promo_total.abs > 0 }
             if promo_line_items.blank?
-              present_discount = ((parent_order.promo_total.abs/(parent_order.total+parent_order.promo_total.abs))*100).to_f.round(2)
+              present_discount = ((parent_order.promo_total.abs/(parent_order.item_total+parent_order.promo_total.abs))*100).to_f.round(2)
             else
               line_items = order.line_items
               promo_line_item = promo_line_items.select{|s| line_items.map(&:variant_id).include?(s.variant_id)}.first
@@ -330,8 +330,8 @@ module Spree
             end
           end
           if present_discount > 0
-            discount_value = (order.total*(present_discount/100)).round(2)
-            order.total = order.total - discount_value
+            discount_value = (order.item_total*(present_discount/100)).round(2)
+            order.total = order.item_total - discount_value
             order.promo_total = -discount_value
             order.adjustment_total = -discount_value
             order.adjustments.create(amount: order.promo_total, order: order, source: parent_order.promotions.first, label: "Promotion (#{parent_order.promotions.first.name})")
