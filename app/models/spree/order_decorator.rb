@@ -6,7 +6,7 @@ Spree::Order.class_eval do
                            foreign_key: :parent_order_id,
                            dependent: :restrict_with_error
 
-  self.state_machine.after_transition to: :complete, do: :enable_subscriptions, if: :any_disabled_subscription?
+  # self.state_machine.after_transition to: :complete, do: :enable_subscriptions, if: :any_disabled_subscription?
 
   after_update :update_subscriptions
 
@@ -19,7 +19,6 @@ Spree::Order.class_eval do
   end
 
   private
-
     def enable_subscriptions
       subscriptions.each do |subscription|
         subscription.update(

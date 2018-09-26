@@ -49,8 +49,10 @@ module Spree
     with_options presence: true do
       validates :quantity, :delivery_number, :price, :number, :variant, :parent_order, :frequency
       validates :cancellation_reasons, :cancelled_at, if: :cancelled
+      # validates :next_occurrence_at, :source, if: :enabled?
       validates :ship_address, :bill_address, :next_occurrence_at, :source, if: :enabled?
     end
+
     validate :next_occurrence_at_range, if: :next_occurrence_at
 
     define_model_callbacks :pause, only: [:before]
@@ -177,10 +179,10 @@ module Spree
           @order = order = make_new_order
           add_variant_to_order(order)
           add_shipping_address(order)
-          add_delivery_method_to_order(order)
+          # add_delivery_method_to_order(order)
           add_payment_method_to_order(order)
           confirm_order(order)
-          if @order.payments.last.state.try(:downcase) == 'failed'
+          if @order.payments.present? && @order.payments.last.state.try(:downcase) == 'failed'
             set_for_next_retry
             SubscriptionNotifier.failed_recurring_order(self, 'Oops - We are not able to capture payment').deliver_later
           end
@@ -191,7 +193,7 @@ module Spree
           end
           order
         rescue Exception => e
-          if @order.payments.last.state.try(:downcase) == 'failed'
+          if @order.payments.present? && @order.payments.last.state.try(:downcase) == 'failed'
             set_for_next_retry
             SubscriptionNotifier.failed_recurring_order(self, 'Oops - We are not able to capture payment').deliver_later
           end
@@ -219,17 +221,19 @@ module Spree
 
       def add_variant_to_order(order)
         order.contents.add(variant, quantity)
-        order.next
+        # order.next
       end
 
       def add_shipping_address(order)
-        order.ship_address = ship_address.clone
-        order.bill_address = bill_address.clone
-        order.next
+        order.ship_address = ship_address.clone if ship_address.present?
+        order.bill_address = bill_address.clone if bill_address.present?
+        order.country = ship_address.country.iso
+        order.zipcode = ship_address.zipcode
+        # order.next
       end
 
       def add_delivery_method_to_order(order)
-        order.next
+        # order.next
       end
 
       def add_payment_method_to_order(order)
@@ -252,8 +256,7 @@ module Spree
           store: parent_order.store,
           user: parent_order.user,
           created_by: parent_order.user,
-          last_ip_address: parent_order.last_ip_address,
-          language_locale: parent_order.language_locale
+          last_ip_address: parent_order.last_ip_address
         }
       end
 

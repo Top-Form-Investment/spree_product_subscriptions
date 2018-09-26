@@ -2,10 +2,11 @@ Spree::LineItem.class_eval do
 
   attr_accessor :subscription_frequency_id, :delivery_number, :subscribe
 
-  after_create :create_subscription!, if: :subscribable?
-  after_update :create_subscription!, if: :subscribable? && :need_new_subscription?
-  after_update :update_subscription_quantity, if: :can_update_subscription_quantity?
-  after_update :update_subscription_attributes, if: :can_update_subscription_attributes?
+  # Pausing all callbacks as we are creating subscription order create on thankyou page
+  # after_create :create_subscription!, if: :subscribable?
+  # after_update :create_subscription!, if: :subscribable? && :need_new_subscription?
+  # after_update :update_subscription_quantity, if: :can_update_subscription_quantity?
+  # after_update :update_subscription_attributes, if: :can_update_subscription_attributes?
   after_destroy :destroy_associated_subscription!, if: :subscription?
 
   def subscription_attributes_present?
