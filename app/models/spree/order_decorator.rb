@@ -7,6 +7,7 @@ Spree::Order.class_eval do
                            dependent: :restrict_with_error
 
   self.state_machine.after_transition to: :complete, do: :enable_subscriptions, if: :any_disabled_subscription?
+  after_update :enable_subscriptions, if: -> { persisted? && state == 'complete' }
 
   after_update :update_subscriptions
 
